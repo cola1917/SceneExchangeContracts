@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/closed_loop_scene_package.v1.schema.json",
+  "title": "ClosedLoopBench Scene Package",
+  "type": "object",
+  "required": ["schema_version", "scene_id", "source", "coordinate_frame", "motion", "map", "scenario", "visual", "alignment"],
+  "properties": {
+    "schema_version": {"const": "closed_loop_scene_package.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "source": {
+      "type": "object",
+      "required": ["dataset", "scene_id", "scene_token"],
+      "properties": {
+        "dataset": {"const": "nuscenes"},
+        "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "scene_token": {"type": "string", "pattern": "^[0-9a-f]{32}$"}
+      }
+    },
+    "coordinate_frame": {"$ref": "scenario_ir.v1.schema.json#/properties/coordinate_frame"},
+    "motion": {
+      "type": "object",
+      "required": ["scene_ir"],
+      "properties": {"scene_ir": {"type": "string", "minLength": 1}}
+    },
+    "map": {
+      "type": "object",
+      "required": ["location", "opendrive"],
+      "properties": {
+        "location": {"type": ["string", "null"]},
+        "opendrive": {"type": ["string", "null"]},
+        "source": {"type": "string"}
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["openscenario"],
+      "properties": {"openscenario": {"type": "string", "minLength": 1}}
+    },
+    "visual": {
+      "type": "object",
+      "required": ["nurec_usdz", "nurec_checkpoint", "reconstruction_package"],
+      "properties": {
+        "nurec_usdz": {"type": ["string", "null"]},
+        "nurec_checkpoint": {"type": ["string", "null"]},
+        "reconstruction_package": {"type": ["string", "null"]}
+      }
+    },
+    "alignment": {
+      "type": "object",
+      "required": ["sim_from_log_transform", "matrix_layout", "source_frame", "target_frame", "status"],
+      "properties": {
+        "sim_from_log_transform": {
+          "type": ["array", "null"],
+          "minItems": 16,
+          "maxItems": 16,
+          "items": {"type": "number"}
+        },
+        "matrix_layout": {"const": "row_major_4x4"},
+        "source_frame": {"const": "nuscenes_global"},
+        "target_frame": {"const": "scene_local_ego_start"},
+        "status": {"enum": ["pending_runtime_alignment", "log_to_sim_defined", "runtime_validated"]},
+        "validation_evidence": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/reconstruction_request.schema.json",
+  "title": "Reconstruction Build Request",
+  "description": "A request for NeuralSceneBridge to build immutable NCore, NuRec, or Reconstruction Package products for one canonical scene token.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "producer", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "reconstruction_request.v1"
+        },
+        "message_type": {
+          "const": "reconstruction.build.request"
+        },
+        "producer": {
+          "allOf": [
+            {
+              "$ref": "shared_envelope.schema.json#/$defs/producer"
+            },
+            {
+              "properties": {
+                "project": {
+                  "enum": ["TriggerEngine", "ClosedLoopBench"]
+                }
+              }
+            }
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "scene_id",
+            "source",
+            "requested_products",
+            "profile",
+            "output_prefix"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "scene_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/scene_token"
+            },
+            "source": {
+              "type": "object",
+              "required": ["dataset", "scene_token", "scene_key_kind", "data_root"],
+              "properties": {
+                "dataset": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "dataset_version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "scene_name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "scene_token": {
+                  "$ref": "shared_envelope.schema.json#/$defs/scene_token"
+                },
+                "scene_key_kind": {
+                  "const": "token"
+                },
+                "data_root": {
+                  "$ref": "shared_artifact_ref.schema.json#/$defs/relative_path"
+                }
+              },
+              "additionalProperties": false
+            },
+            "scenario_ir": {
+              "allOf": [
+                {
+                  "$ref": "shared_artifact_ref.schema.json"
+                },
+                {
+                  "properties": {
+                    "role": {
+                      "const": "scenario_ir"
+                    },
+                    "media_type": {
+                      "const": "application/json"
+                    }
+                  }
+                }
+              ]
+            },
+            "inputs": {
+              "type": "array",
+              "items": {
+                "$ref": "shared_artifact_ref.schema.json"
+              },
+              "uniqueItems": true,
+              "maxItems": 64
+            },
+            "requested_products": {
+              "type": "array",
+              "items": {
+                "enum": ["ncore_dataset", "nurec_reconstruction", "reconstruction_package"]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "profile": {
+              "enum": ["smoke", "standard", "quality"]
+            },
+            "camera_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "reconstruction_window": {
+              "type": "object",
+              "required": ["start_sec", "end_sec"],
+              "properties": {
+                "start_sec": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "end_sec": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "allow_cached": {
+              "type": "boolean",
+              "default": true
+            },
+            "output_prefix": {
+              "$ref": "shared_artifact_ref.schema.json#/$defs/relative_path"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "reconstruction_request.v1",
+      "message_id": "msg-reconstruction-request-001",
+      "message_type": "reconstruction.build.request",
+      "created_at": "2026-07-13T12:00:01Z",
+      "producer": {
+        "project": "TriggerEngine",
+        "component": "bridge-dispatcher",
+        "version": "1.0.0"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-selection-001"
+      },
+      "idempotency": {
+        "key": "reconstruction/nuscenes/cc8c0bf57f984915a77078b10eb33198/v001",
+        "scope": "scene"
+      },
+      "payload": {
+        "job_id": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001",
+        "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+        "source": {
+          "dataset": "nuscenes",
+          "dataset_version": "v1.0-mini",
+          "scene_name": "scene-0061",
+          "scene_token": "cc8c0bf57f984915a77078b10eb33198",
+          "scene_key_kind": "token",
+          "data_root": "datasets/nuscenes-mini"
+        },
+        "requested_products": ["ncore_dataset", "nurec_reconstruction", "reconstruction_package"],
+        "profile": "smoke",
+        "camera_ids": ["camera_front", "camera_front_left", "camera_front_right"],
+        "reconstruction_window": {
+          "start_sec": 0,
+          "end_sec": 19.15
+        },
+        "allow_cached": true,
+        "output_prefix": "scenes/cc8c0bf57f984915a77078b10eb33198/v001"
+      }
+    }
+  ]
+}

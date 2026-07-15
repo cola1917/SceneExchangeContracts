@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/shared_job_request.schema.json",
+  "title": "Shared Job Request",
+  "description": "Queue record that points to one immutable typed reconstruction or evaluation request.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "shared_job_request.v1"
+        },
+        "message_type": {
+          "const": "shared.job.request"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "job_kind",
+            "target_project",
+            "request_message_id",
+            "request_artifact",
+            "priority",
+            "max_attempts",
+            "output_prefix"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "job_kind": {
+              "$ref": "shared_envelope.schema.json#/$defs/job_kind"
+            },
+            "target_project": {
+              "enum": ["NeuralSceneBridge", "ClosedLoopBench"]
+            },
+            "request_message_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "request_artifact": {
+              "allOf": [
+                {
+                  "$ref": "shared_artifact_ref.schema.json"
+                },
+                {
+                  "properties": {
+                    "role": {
+                      "const": "job_request"
+                    },
+                    "media_type": {
+                      "const": "application/json"
+                    }
+                  }
+                }
+              ]
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "not_before": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "deadline": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "output_prefix": {
+              "$ref": "shared_artifact_ref.schema.json#/$defs/relative_path"
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+              },
+              "uniqueItems": true,
+              "maxItems": 64
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "shared_job_request.v1",
+      "message_id": "msg-job-request-001",
+      "message_type": "shared.job.request",
+      "created_at": "2026-07-13T12:00:00Z",
+      "producer": {
+        "project": "TriggerEngine",
+        "component": "shared-job-publisher",
+        "version": "1.0.0"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-reconstruction-request-001"
+      },
+      "idempotency": {
+        "key": "reconstruction/cc8c0bf57f984915a77078b10eb33198/v001",
+        "scope": "job"
+      },
+      "payload": {
+        "job_id": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001",
+        "job_kind": "reconstruction",
+        "target_project": "NeuralSceneBridge",
+        "request_message_id": "msg-reconstruction-request-001",
+        "request_artifact": {
+          "schema_version": "shared_artifact_ref.v1",
+          "path": "requests/reconstruction-cc8c0bf57f984915a77078b10eb33198-v001/request.json",
+          "role": "job_request",
+          "media_type": "application/json",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "size_bytes": 4096,
+          "immutable": true
+        },
+        "priority": 5,
+        "max_attempts": 2,
+        "output_prefix": "scenes/cc8c0bf57f984915a77078b10eb33198/v001",
+        "dependencies": []
+      }
+    }
+  ]
+}

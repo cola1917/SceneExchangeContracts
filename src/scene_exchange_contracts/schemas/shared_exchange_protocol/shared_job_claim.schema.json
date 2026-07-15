@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/shared_job_claim.schema.json",
+  "title": "Shared Job Lease Claim",
+  "description": "An attempt-scoped lease. Consumers must not infer completion from a claim file.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "shared_job_claim.v1"
+        },
+        "message_type": {
+          "const": "shared.job.claim"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "job_kind",
+            "request_message_id",
+            "worker_id",
+            "lease_id",
+            "attempt",
+            "status",
+            "claimed_at",
+            "lease_expires_at"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "job_kind": {
+              "$ref": "shared_envelope.schema.json#/$defs/job_kind"
+            },
+            "request_message_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "worker_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "lease_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "status": {
+              "const": "claimed"
+            },
+            "claimed_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "lease_expires_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "shared_job_claim.v1",
+      "message_id": "msg-job-claim-001",
+      "message_type": "shared.job.claim",
+      "created_at": "2026-07-13T12:00:05Z",
+      "producer": {
+        "project": "NeuralSceneBridge",
+        "component": "reconstruction-worker",
+        "version": "1.0.0",
+        "instance_id": "bridge-worker-01"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-job-request-001"
+      },
+      "idempotency": {
+        "key": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001/attempt-1/claim",
+        "scope": "job"
+      },
+      "payload": {
+        "job_id": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001",
+        "job_kind": "reconstruction",
+        "request_message_id": "msg-job-request-001",
+        "worker_id": "bridge-worker-01",
+        "lease_id": "lease-reconstruction-001",
+        "attempt": 1,
+        "status": "claimed",
+        "claimed_at": "2026-07-13T12:00:05Z",
+        "lease_expires_at": "2026-07-13T12:30:05Z"
+      }
+    }
+  ]
+}

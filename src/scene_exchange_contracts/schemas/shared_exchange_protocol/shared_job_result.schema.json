@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/shared_job_result.schema.json",
+  "title": "Shared Job Result",
+  "description": "One terminal result for a claimed attempt. Failed and cancelled results carry a structured error.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "shared_job_result.v1"
+        },
+        "message_type": {
+          "const": "shared.job.result"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "job_kind",
+            "request_message_id",
+            "claim_message_id",
+            "attempt",
+            "status",
+            "started_at",
+            "finished_at",
+            "outputs"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "job_kind": {
+              "$ref": "shared_envelope.schema.json#/$defs/job_kind"
+            },
+            "request_message_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "claim_message_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "status": {
+              "$ref": "shared_envelope.schema.json#/$defs/terminal_status"
+            },
+            "started_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "finished_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "outputs": {
+              "type": "array",
+              "items": {
+                "$ref": "shared_artifact_ref.schema.json"
+              },
+              "maxItems": 256
+            },
+            "metrics": {
+              "type": "object"
+            },
+            "error": {
+              "$ref": "shared_envelope.schema.json#/$defs/error"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "succeeded"
+                  }
+                },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": {
+                  "outputs": {
+                    "minItems": 1
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": ["failed", "cancelled"]
+                  }
+                },
+                "required": ["status"]
+              },
+              "then": {
+                "required": ["error"]
+              }
+            }
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "shared_job_result.v1",
+      "message_id": "msg-job-result-001",
+      "message_type": "shared.job.result",
+      "created_at": "2026-07-13T12:20:00Z",
+      "producer": {
+        "project": "NeuralSceneBridge",
+        "component": "reconstruction-worker",
+        "version": "1.0.0"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-job-claim-001"
+      },
+      "idempotency": {
+        "key": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001/attempt-1/result",
+        "scope": "job"
+      },
+      "payload": {
+        "job_id": "reconstruction-cc8c0bf57f984915a77078b10eb33198-v001",
+        "job_kind": "reconstruction",
+        "request_message_id": "msg-job-request-001",
+        "claim_message_id": "msg-job-claim-001",
+        "attempt": 1,
+        "status": "succeeded",
+        "started_at": "2026-07-13T12:00:05Z",
+        "finished_at": "2026-07-13T12:20:00Z",
+        "outputs": [
+          {
+            "schema_version": "shared_artifact_ref.v1",
+            "path": "scenes/cc8c0bf57f984915a77078b10eb33198/v001/scene_package.json",
+            "role": "scene_package",
+            "media_type": "application/json",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "size_bytes": 2048,
+            "immutable": true
+          }
+        ],
+        "metrics": {
+          "duration_sec": 1195.0
+        }
+      }
+    }
+  ]
+}

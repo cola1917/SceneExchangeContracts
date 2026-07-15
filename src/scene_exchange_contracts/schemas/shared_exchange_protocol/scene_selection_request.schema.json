@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/scene_selection_request.schema.json",
+  "title": "Scene Selection Request",
+  "description": "TriggerEngine's simulator-agnostic selection handoff. For nuScenes, scene_id is the native scene token and the readable name is optional metadata outside the canonical identity.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "producer", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "scene_selection_request.v1"
+        },
+        "message_type": {
+          "const": "scene.selection.request"
+        },
+        "producer": {
+          "allOf": [
+            {
+              "$ref": "shared_envelope.schema.json#/$defs/producer"
+            },
+            {
+              "properties": {
+                "project": {
+                  "const": "TriggerEngine"
+                }
+              }
+            }
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "required": ["scene_id", "source"],
+          "properties": {
+            "scene_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/scene_token"
+            },
+            "source": {
+              "type": "object",
+              "required": ["dataset"],
+              "properties": {
+                "dataset": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "dataset_version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "scene_name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "scene_key_kind": {
+                  "enum": ["name", "token", "index"],
+                  "default": "name"
+                },
+                "data_root": {
+                  "$ref": "shared_artifact_ref.schema.json#/$defs/relative_path"
+                }
+              },
+              "additionalProperties": false
+            },
+            "scenario_ir": {
+              "allOf": [
+                {
+                  "$ref": "shared_artifact_ref.schema.json"
+                },
+                {
+                  "properties": {
+                    "role": {
+                      "const": "scenario_ir"
+                    },
+                    "media_type": {
+                      "const": "application/json"
+                    }
+                  }
+                }
+              ]
+            },
+            "selection": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "priority": {
+                  "enum": ["low", "normal", "high", "critical"]
+                },
+                "trigger_tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 64
+                },
+                "risk_metrics": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": ["number", "integer", "string", "boolean", "null"]
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "reconstruction_window": {
+              "type": "object",
+              "required": ["start_sec", "end_sec"],
+              "properties": {
+                "start_sec": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "end_sec": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "requested_products": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "scene_ir",
+                  "ncore_dataset",
+                  "nurec_reconstruction",
+                  "scene_package",
+                  "closed_loop_evaluation"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "scene_selection_request.v1",
+      "message_id": "msg-selection-001",
+      "message_type": "scene.selection.request",
+      "created_at": "2026-07-13T12:00:00Z",
+      "producer": {
+        "project": "TriggerEngine",
+        "component": "scene-selector",
+        "version": "scenario_ir.v1"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001"
+      },
+      "idempotency": {
+        "key": "selection/nuscenes/cc8c0bf57f984915a77078b10eb33198",
+        "scope": "scene"
+      },
+      "payload": {
+        "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+        "source": {
+          "dataset": "nuscenes",
+          "dataset_version": "v1.0-mini",
+          "scene_name": "scene-0061",
+          "scene_key_kind": "token",
+          "data_root": "datasets/nuscenes-mini"
+        },
+        "selection": {
+          "reason": "Mined high-value interaction",
+          "score": 0.91,
+          "priority": "high",
+          "trigger_tags": ["cut_in"]
+        },
+        "requested_products": ["nurec_reconstruction", "scene_package"]
+      }
+    }
+  ]
+}

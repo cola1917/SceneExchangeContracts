@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/reconstruction_package.v1.schema.json",
+  "title": "NeuralSceneBridge Reconstruction Package v1",
+  "type": "object",
+  "required": ["schema_version", "scene_id", "source", "backend", "coverage", "artifacts", "alignment", "warnings"],
+  "properties": {
+    "schema_version": {"const": "reconstruction_package.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "source": {
+      "type": "object",
+      "required": ["dataset", "dataset_version", "scene_name", "scene_token"],
+      "properties": {
+        "dataset": {"const": "nuscenes"},
+        "dataset_version": {"type": "string", "minLength": 1},
+        "scene_name": {"type": "string", "minLength": 1},
+        "scene_token": {"type": "string", "pattern": "^[0-9a-f]{32}$"}
+      },
+      "additionalProperties": false
+    },
+    "backend": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["mode", "requested_window", "actual_window"],
+      "properties": {
+        "mode": {"enum": ["full_scene", "window", "unknown"]},
+        "requested_window": {"$ref": "#/$defs/window_or_null"},
+        "actual_window": {"$ref": "#/$defs/window_or_null"}
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"},
+      "maxItems": 64
+    },
+    "alignment": {
+      "type": "object",
+      "required": ["log_coordinate_frame", "visual_coordinate_frame", "sim_from_log_transform", "status"],
+      "properties": {
+        "log_coordinate_frame": {"const": "nuscenes_global"},
+        "visual_coordinate_frame": {"type": "string", "minLength": 1},
+        "sim_from_log_transform": {
+          "type": ["array", "null"],
+          "minItems": 16,
+          "maxItems": 16,
+          "items": {"type": "number"}
+        },
+        "status": {"enum": ["pending_runtime_alignment", "log_to_sim_defined", "runtime_validated"]}
+      },
+      "additionalProperties": false
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}, "maxItems": 128}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "window_or_null": {
+      "type": ["object", "null"],
+      "properties": {
+        "start_sec": {"type": "number", "minimum": 0},
+        "end_sec": {"type": "number", "exclusiveMinimum": 0}
+      },
+      "required": ["start_sec", "end_sec"],
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["role", "path", "media_type", "sha256", "size_bytes"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"},
+        "media_type": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

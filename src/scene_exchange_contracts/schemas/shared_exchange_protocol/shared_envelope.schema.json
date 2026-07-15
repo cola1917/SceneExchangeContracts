@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/shared_envelope.schema.json",
+  "title": "Shared Exchange Message Envelope",
+  "description": "Common immutable message metadata for TriggerEngine, NeuralSceneBridge, and ClosedLoopBench.",
+  "type": "object",
+  "required": [
+    "protocol_version",
+    "schema_version",
+    "message_id",
+    "message_type",
+    "created_at",
+    "producer",
+    "correlation",
+    "idempotency",
+    "payload"
+  ],
+  "properties": {
+    "protocol_version": {
+      "const": "shared_exchange_protocol.v1"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]*\\.v[0-9]+$"
+    },
+    "message_id": {
+      "$ref": "#/$defs/safe_id"
+    },
+    "message_type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{2,63}$"
+    },
+    "created_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "producer": {
+      "$ref": "#/$defs/producer"
+    },
+    "correlation": {
+      "$ref": "#/$defs/correlation"
+    },
+    "idempotency": {
+      "$ref": "#/$defs/idempotency"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "safe_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "scene_token": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer": {
+      "type": "object",
+      "required": ["project", "component", "version"],
+      "properties": {
+        "project": {
+          "enum": ["TriggerEngine", "NeuralSceneBridge", "ClosedLoopBench"]
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "instance_id": {
+          "$ref": "#/$defs/safe_id"
+        },
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "correlation": {
+      "type": "object",
+      "required": ["correlation_id", "root_message_id"],
+      "properties": {
+        "correlation_id": {
+          "$ref": "#/$defs/safe_id"
+        },
+        "root_message_id": {
+          "$ref": "#/$defs/safe_id"
+        },
+        "causation_message_id": {
+          "$ref": "#/$defs/safe_id"
+        }
+      },
+      "additionalProperties": false
+    },
+    "idempotency": {
+      "type": "object",
+      "required": ["key", "scope"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "scope": {
+          "enum": ["global", "scene", "job", "run"]
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object"
+        },
+        "causes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          },
+          "maxItems": 16
+        }
+      },
+      "additionalProperties": false
+    },
+    "job_kind": {
+      "enum": ["reconstruction", "evaluation"]
+    },
+    "terminal_status": {
+      "enum": ["succeeded", "failed", "cancelled"]
+    }
+  }
+}

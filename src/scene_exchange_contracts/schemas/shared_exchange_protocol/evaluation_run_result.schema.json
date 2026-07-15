@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/evaluation_run_result.schema.json",
+  "title": "Closed-Loop Evaluation Run Result",
+  "description": "ClosedLoopBench's terminal result, KPI summary, and immutable report reference for one run.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "producer", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "evaluation_run_result.v1"
+        },
+        "message_type": {
+          "const": "evaluation.run.result"
+        },
+        "producer": {
+          "allOf": [
+            {
+              "$ref": "shared_envelope.schema.json#/$defs/producer"
+            },
+            {
+              "properties": {
+                "project": {
+                  "const": "ClosedLoopBench"
+                }
+              }
+            }
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "run_id",
+            "scene_id",
+            "scene_version",
+            "status",
+            "runtime_status",
+            "outcome",
+            "algorithm",
+            "odd",
+            "started_at",
+            "finished_at",
+            "duration_sec",
+            "summary",
+            "artifacts"
+          ],
+          "properties": {
+            "run_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "scene_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/scene_token"
+            },
+            "scene_version": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "status": {
+              "$ref": "shared_envelope.schema.json#/$defs/terminal_status"
+            },
+            "runtime_status": {
+              "enum": [
+                "not_run",
+                "planned",
+                "completed",
+                "ego_closed_loop",
+                "interactive_closed_loop",
+                "failed"
+              ]
+            },
+            "outcome": {
+              "enum": ["pass", "fail", "unknown"]
+            },
+            "algorithm": {
+              "type": "object",
+              "required": ["algorithm_id", "algorithm_version"],
+              "properties": {
+                "algorithm_id": {
+                  "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+                },
+                "algorithm_version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "additionalProperties": false
+            },
+            "odd": {
+              "type": "object",
+              "required": ["odd_id"],
+              "properties": {
+                "odd_id": {
+                  "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+                },
+                "weather": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "additionalProperties": false
+            },
+            "started_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "finished_at": {
+              "$ref": "shared_envelope.schema.json#/$defs/timestamp"
+            },
+            "duration_sec": {
+              "type": "number",
+              "minimum": 0
+            },
+            "summary": {
+              "type": "object",
+              "required": [
+                "collision_count",
+                "min_ttc",
+                "route_progress",
+                "hard_brake_count",
+                "max_jerk",
+                "control_timeout_count"
+              ],
+              "properties": {
+                "collision_count": {
+                  "type": ["integer", "null"],
+                  "minimum": 0
+                },
+                "min_ttc": {
+                  "type": ["number", "null"],
+                  "minimum": 0
+                },
+                "route_progress": {
+                  "type": ["number", "null"],
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "hard_brake_count": {
+                  "type": ["integer", "null"],
+                  "minimum": 0
+                },
+                "max_jerk": {
+                  "type": ["number", "null"],
+                  "minimum": 0
+                },
+                "control_timeout_count": {
+                  "type": ["integer", "null"],
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "report": {
+              "allOf": [
+                {
+                  "$ref": "shared_artifact_ref.schema.json"
+                },
+                {
+                  "properties": {
+                    "role": {
+                      "const": "closed_loop_report"
+                    },
+                    "media_type": {
+                      "const": "application/json"
+                    }
+                  }
+                }
+              ]
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "shared_artifact_ref.schema.json"
+                  },
+                  {
+                    "properties": {
+                      "role": {
+                        "enum": [
+                          "closed_loop_report",
+                          "run_config",
+                          "metrics_trace",
+                          "runtime_log",
+                          "run_video"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "maxItems": 64
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "maxItems": 128
+            },
+            "error": {
+              "$ref": "shared_envelope.schema.json#/$defs/error"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "succeeded"
+                  }
+                },
+                "required": ["status"]
+              },
+              "then": {
+                "required": ["report"],
+                "properties": {
+                  "artifacts": {
+                    "minItems": 1
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "enum": ["failed", "cancelled"]
+                  }
+                },
+                "required": ["status"]
+              },
+              "then": {
+                "required": ["error"]
+              }
+            }
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "evaluation_run_result.v1",
+      "message_id": "msg-evaluation-result-001",
+      "message_type": "evaluation.run.result",
+      "created_at": "2026-07-13T12:23:00Z",
+      "producer": {
+        "project": "ClosedLoopBench",
+        "component": "host-runner",
+        "version": "closed_loop_report.mvp.v0"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-evaluation-request-001"
+      },
+      "idempotency": {
+        "key": "evaluation-result/run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42",
+        "scope": "run"
+      },
+      "payload": {
+        "run_id": "run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42",
+        "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+        "scene_version": "v001",
+        "status": "succeeded",
+        "runtime_status": "interactive_closed_loop",
+        "outcome": "pass",
+        "algorithm": {
+          "algorithm_id": "basic_agent",
+          "algorithm_version": "carla-0.9.16"
+        },
+        "odd": {
+          "odd_id": "clear-day",
+          "weather": "ClearNoon"
+        },
+        "started_at": "2026-07-13T12:21:10Z",
+        "finished_at": "2026-07-13T12:22:10Z",
+        "duration_sec": 60,
+        "summary": {
+          "collision_count": 0,
+          "min_ttc": 2.8,
+          "route_progress": 1,
+          "hard_brake_count": 0,
+          "max_jerk": 3.1,
+          "control_timeout_count": 0
+        },
+        "report": {
+          "schema_version": "shared_artifact_ref.v1",
+          "path": "runs/run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42/closed_loop_report.json",
+          "role": "closed_loop_report",
+          "media_type": "application/json",
+          "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "size_bytes": 8192,
+          "content_schema": "closed_loop_report.mvp.v0",
+          "immutable": true
+        },
+        "artifacts": [
+          {
+            "schema_version": "shared_artifact_ref.v1",
+            "path": "runs/run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42/closed_loop_report.json",
+            "role": "closed_loop_report",
+            "media_type": "application/json",
+            "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "size_bytes": 8192,
+            "content_schema": "closed_loop_report.mvp.v0",
+            "immutable": true
+          }
+        ],
+        "warnings": []
+      }
+    }
+  ]
+}

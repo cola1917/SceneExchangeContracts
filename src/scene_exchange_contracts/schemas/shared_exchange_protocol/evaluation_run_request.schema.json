@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/evaluation_run_request.schema.json",
+  "title": "Closed-Loop Evaluation Run Request",
+  "description": "A deterministic single-run request. Repetitions use distinct run_id and seed values behind the same correlation_id.",
+  "allOf": [
+    {
+      "$ref": "shared_envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "message_type", "producer", "payload"],
+      "properties": {
+        "schema_version": {
+          "const": "evaluation_run_request.v1"
+        },
+        "message_type": {
+          "const": "evaluation.run.request"
+        },
+        "producer": {
+          "allOf": [
+            {
+              "$ref": "shared_envelope.schema.json#/$defs/producer"
+            },
+            {
+              "properties": {
+                "project": {
+                  "const": "ClosedLoopBench"
+                }
+              }
+            }
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "run_id",
+            "scene_id",
+            "scene_version",
+            "scene_package",
+            "algorithm",
+            "odd",
+            "simulator",
+            "actor_control",
+            "metrics",
+            "seed",
+            "timeout_sec",
+            "output_prefix"
+          ],
+          "properties": {
+            "run_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "scene_id": {
+              "$ref": "shared_envelope.schema.json#/$defs/scene_token"
+            },
+            "scene_version": {
+              "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+            },
+            "scene_package": {
+              "allOf": [
+                {
+                  "$ref": "shared_artifact_ref.schema.json"
+                },
+                {
+                  "properties": {
+                    "role": {
+                      "const": "scene_package"
+                    },
+                    "media_type": {
+                      "const": "application/json"
+                    }
+                  }
+                }
+              ]
+            },
+            "algorithm": {
+              "type": "object",
+              "required": ["algorithm_id", "algorithm_version", "driver"],
+              "properties": {
+                "algorithm_id": {
+                  "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+                },
+                "algorithm_version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "driver": {
+                  "enum": ["basic_agent", "ros2", "external_plugin"]
+                },
+                "checkpoint": {
+                  "allOf": [
+                    {
+                      "$ref": "shared_artifact_ref.schema.json"
+                    },
+                    {
+                      "properties": {
+                        "role": {
+                          "const": "algorithm_checkpoint"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "parameters": {
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false
+            },
+            "odd": {
+              "type": "object",
+              "required": ["odd_id"],
+              "properties": {
+                "odd_id": {
+                  "$ref": "shared_envelope.schema.json#/$defs/safe_id"
+                },
+                "weather": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "parameters": {
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false
+            },
+            "simulator": {
+              "type": "object",
+              "required": ["name", "version", "synchronous_mode", "fixed_delta_seconds"],
+              "properties": {
+                "name": {
+                  "const": "carla"
+                },
+                "version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "synchronous_mode": {
+                  "const": true
+                },
+                "fixed_delta_seconds": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "actor_control": {
+              "type": "object",
+              "required": ["mode"],
+              "properties": {
+                "mode": {
+                  "enum": ["replay", "scripted", "traffic_manager", "mixed"]
+                },
+                "style": {
+                  "enum": ["cautious", "normal", "aggressive"]
+                }
+              },
+              "additionalProperties": false
+            },
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.-]{1,63}$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "timeout_sec": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "output_prefix": {
+              "$ref": "shared_artifact_ref.schema.json#/$defs/relative_path"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "examples": [
+    {
+      "protocol_version": "shared_exchange_protocol.v1",
+      "schema_version": "evaluation_run_request.v1",
+      "message_id": "msg-evaluation-request-001",
+      "message_type": "evaluation.run.request",
+      "created_at": "2026-07-13T12:21:00Z",
+      "producer": {
+        "project": "ClosedLoopBench",
+        "component": "run-planner",
+        "version": "closed_loop_run.mvp.v0"
+      },
+      "correlation": {
+        "correlation_id": "flow-cc8c0bf57f984915a77078b10eb33198",
+        "root_message_id": "msg-selection-001",
+        "causation_message_id": "msg-reconstruction-result-001"
+      },
+      "idempotency": {
+        "key": "evaluation/cc8c0bf57f984915a77078b10eb33198/v001/basic-agent/clear/seed-42",
+        "scope": "run"
+      },
+      "payload": {
+        "run_id": "run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42",
+        "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+        "scene_version": "v001",
+        "scene_package": {
+          "schema_version": "shared_artifact_ref.v1",
+          "path": "scenes/cc8c0bf57f984915a77078b10eb33198/v001/scene_package.json",
+          "role": "scene_package",
+          "media_type": "application/json",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "size_bytes": 2048,
+          "content_schema": "closed_loop_scene_package.v1",
+          "immutable": true
+        },
+        "algorithm": {
+          "algorithm_id": "basic_agent",
+          "algorithm_version": "carla-0.9.16",
+          "driver": "basic_agent"
+        },
+        "odd": {
+          "odd_id": "clear-day",
+          "weather": "ClearNoon"
+        },
+        "simulator": {
+          "name": "carla",
+          "version": "0.9.16",
+          "synchronous_mode": true,
+          "fixed_delta_seconds": 0.05
+        },
+        "actor_control": {
+          "mode": "traffic_manager",
+          "style": "normal"
+        },
+        "metrics": ["collision_count", "min_ttc", "route_progress", "hard_brake_count", "max_jerk"],
+        "seed": 42,
+        "timeout_sec": 120,
+        "output_prefix": "runs/run-cc8c0bf57f984915a77078b10eb33198-basic-agent-clear-42"
+      }
+    }
+  ]
+}

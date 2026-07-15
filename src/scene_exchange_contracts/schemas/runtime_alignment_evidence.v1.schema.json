@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/runtime_alignment_evidence.v1.schema.json",
+  "title": "NuRec to Simulator Runtime Alignment Evidence v1",
+  "type": "object",
+  "required": ["schema_version", "scene_id", "captured_at", "runtime", "thresholds", "landmarks", "summary", "status"],
+  "properties": {
+    "schema_version": {"const": "runtime_alignment_evidence.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "runtime": {
+      "type": "object",
+      "required": ["simulator", "renderer", "capture_method", "nurec_artifact_sha256"],
+      "properties": {
+        "simulator": {"type": "string", "minLength": 1},
+        "renderer": {"type": "string", "minLength": 1},
+        "capture_method": {"type": "string", "minLength": 1},
+        "nurec_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {"type": "object"},
+    "landmarks": {"type": "array", "minItems": 3},
+    "summary": {"type": "object"},
+    "status": {"enum": ["passed", "failed"]}
+  },
+  "additionalProperties": false
+}

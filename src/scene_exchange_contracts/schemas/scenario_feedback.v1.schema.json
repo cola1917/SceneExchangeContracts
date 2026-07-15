@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/scenario_feedback.v1.schema.json",
+  "title": "TriggerEngine Scenario Feedback v1",
+  "type": "object",
+  "required": ["schema_version", "feedback_id", "source", "identity", "classification", "evaluation"],
+  "properties": {
+    "schema_version": {"const": "scenario_feedback.v1"},
+    "feedback_id": {"type": "string", "minLength": 1},
+    "source": {
+      "type": "object",
+      "required": ["protocol_version", "schema_version", "message_id", "message_type", "created_at", "content_sha256"],
+      "properties": {
+        "protocol_version": {"const": "shared_exchange_protocol.v1"},
+        "schema_version": {"const": "evaluation_run_result.v1"},
+        "message_id": {"type": "string", "minLength": 1},
+        "message_type": {"const": "evaluation.run.result"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "required": ["run_id", "scenario_id", "scene_token", "scene_version", "algorithm", "odd"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "scenario_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "scene_token": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "scene_version": {"type": "string", "minLength": 1},
+        "algorithm": {"type": "object"},
+        "odd": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "classification": {
+      "type": "object",
+      "required": ["state", "priority", "disposition"],
+      "properties": {
+        "state": {"enum": ["validated", "failed", "incomplete"]},
+        "priority": {"enum": ["normal", "high"]},
+        "disposition": {"enum": ["pass", "investigate", "unknown"]}
+      },
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["status", "runtime_status", "outcome", "started_at", "finished_at", "duration_sec", "summary", "warnings", "error"],
+      "properties": {
+        "status": {"enum": ["succeeded", "failed", "cancelled"]},
+        "runtime_status": {"enum": ["not_run", "planned", "completed", "ego_closed_loop", "interactive_closed_loop", "failed"]},
+        "outcome": {"enum": ["pass", "fail", "unknown"]},
+        "started_at": {"type": "string", "format": "date-time"},
+        "finished_at": {"type": "string", "format": "date-time"},
+        "duration_sec": {"type": "number", "minimum": 0},
+        "summary": {
+          "type": "object",
+          "required": ["collision_count", "min_ttc", "route_progress", "hard_brake_count", "max_jerk", "control_timeout_count"],
+          "properties": {
+            "collision_count": {"type": ["integer", "null"], "minimum": 0},
+            "min_ttc": {"type": ["number", "null"], "minimum": 0},
+            "route_progress": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "hard_brake_count": {"type": ["integer", "null"], "minimum": 0},
+            "max_jerk": {"type": ["number", "null"], "minimum": 0},
+            "control_timeout_count": {"type": ["integer", "null"], "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "error": {"type": ["object", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

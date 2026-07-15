@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/scenario_ir.v1.schema.json",
+  "title": "Scenario IR v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "scenario_type",
+    "source",
+    "coordinate_frame",
+    "windows",
+    "ego",
+    "actors",
+    "map_context",
+    "sensors",
+    "events",
+    "data_requirements",
+    "risk_metrics",
+    "dataset_refs",
+    "evaluation",
+    "variants"
+  ],
+  "properties": {
+    "schema_version": { "const": "scenario_ir.v1" },
+    "scenario_id": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "scenario_type": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["dataset", "scene_id", "version", "scene_name", "scene_token", "sample_count"],
+      "properties": {
+        "dataset": { "const": "nuscenes" },
+        "scene_id": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+        "version": { "type": "string", "minLength": 1 },
+        "scene_name": { "type": "string", "minLength": 1 },
+        "scene_token": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+        "sample_count": { "type": "integer", "minimum": 1 },
+        "root": { "type": ["string", "null"] }
+      }
+    },
+    "coordinate_frame": {
+      "type": "object",
+      "required": [
+        "name", "units", "handedness", "x_axis", "y_axis",
+        "origin_global_translation", "origin_global_rotation_wxyz",
+        "origin_global_yaw_deg", "transform"
+      ],
+      "properties": {
+        "name": { "const": "scene_local_ego_start" },
+        "units": {
+          "type": "object",
+          "required": ["position", "time", "yaw"],
+          "properties": {
+            "position": { "const": "meter" },
+            "time": { "const": "second" },
+            "yaw": { "const": "degree" }
+          },
+          "additionalProperties": false
+        },
+        "handedness": { "const": "right" },
+        "x_axis": { "const": "initial_ego_forward" },
+        "y_axis": { "const": "initial_ego_left" },
+        "origin_global_translation": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "type": "number" }
+        },
+        "origin_global_rotation_wxyz": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": { "type": "number" }
+        },
+        "origin_global_yaw_deg": { "type": "number" },
+        "transform": { "const": "local_xy = R(-origin_yaw) * (global_xy - origin_xy)" }
+      },
+      "additionalProperties": false
+    },
+    "windows": {
+      "type": "object",
+      "required": ["event", "warmup", "reconstruction"],
+      "properties": {
+        "event": { "$ref": "#/$defs/time_window" },
+        "warmup": { "$ref": "#/$defs/time_window" },
+        "reconstruction": { "$ref": "#/$defs/time_window" }
+      }
+    },
+    "ego": {
+      "type": "object",
+      "required": ["track_id", "initial_state", "reference_trajectory", "route"]
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["actor_id", "role", "type", "initial_state", "reference_trajectory", "policy_hints"]
+      }
+    },
+    "map_context": {
+      "type": "object",
+      "required": ["feature_counts", "features"]
+    },
+    "sensors": {
+      "type": "object",
+      "required": ["available_capabilities"]
+    },
+    "events": {
+      "type": "object",
+      "required": ["trigger", "mined_events"]
+    },
+    "data_requirements": {
+      "type": "object",
+      "required": ["reconstruction", "closed_loop"],
+      "properties": {
+        "reconstruction": {
+          "type": "object",
+          "required": ["required"],
+          "properties": {
+            "required": {
+              "type": "array",
+              "allOf": [
+                { "contains": { "const": "camera_images" } },
+                { "contains": { "const": "camera_calibration" } },
+                { "contains": { "const": "ego_pose" } },
+                { "contains": { "const": "actor_tracks" } }
+              ]
+            }
+          }
+        },
+        "closed_loop": {
+          "type": "object",
+          "required": ["required"],
+          "properties": {
+            "required": {
+              "type": "array",
+              "allOf": [
+                { "contains": { "const": "ego_initial_state" } },
+                { "contains": { "const": "actor_initial_states" } },
+                { "contains": { "const": "map_context" } }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "risk_metrics": {
+      "type": "object",
+      "required": ["trigger_time_sec", "trigger_tag", "actor_count", "ego_reference_state_count"],
+      "properties": {
+        "trigger_time_sec": { "type": "number" },
+        "trigger_tag": { "type": ["string", "null"] },
+        "actor_count": { "type": "integer", "minimum": 0 },
+        "ego_reference_state_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "dataset_refs": {
+      "type": "object",
+      "required": ["source", "sample_refs", "index_refs"],
+      "properties": {
+        "source": {
+          "type": "object",
+          "required": ["dataset", "root", "scene_id"],
+          "properties": {
+            "dataset": { "type": "string" },
+            "root": { "type": ["string", "null"] },
+            "scene_id": { "type": "string" }
+          }
+        },
+        "sample_refs": { "$ref": "#/$defs/deferred_refs" },
+        "index_refs": { "$ref": "#/$defs/deferred_refs" }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["metrics"]
+    },
+    "variants": {
+      "type": "object",
+      "required": ["mvp", "final_closed_loop"]
+    }
+  },
+  "$defs": {
+    "time_window": {
+      "type": "object",
+      "required": ["start_sec", "end_sec"],
+      "properties": {
+        "start_sec": { "type": "number" },
+        "end_sec": { "type": "number" }
+      }
+    },
+    "deferred_refs": {
+      "type": "object",
+      "required": ["status", "refs"],
+      "properties": {
+        "status": { "const": "deferred" },
+        "refs": { "type": "array", "maxItems": 0 }
+      }
+    }
+  }
+}

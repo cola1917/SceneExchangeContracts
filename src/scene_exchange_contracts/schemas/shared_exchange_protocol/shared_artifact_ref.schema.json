@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/shared_exchange_protocol/shared_artifact_ref.schema.json",
+  "title": "Shared Immutable Artifact Reference",
+  "description": "A content-addressed file beneath the configured shared exchange root. Paths always use forward slashes.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "path",
+    "role",
+    "media_type",
+    "sha256",
+    "size_bytes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "shared_artifact_ref.v1"
+    },
+    "path": {
+      "$ref": "#/$defs/relative_path"
+    },
+    "role": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{1,63}$"
+    },
+    "media_type": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "content_schema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "immutable": {
+      "const": true,
+      "default": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "shared_artifact_ref.v1",
+      "path": "scenes/cc8c0bf57f984915a77078b10eb33198/v001/scene_package.json",
+      "role": "scene_package",
+      "media_type": "application/json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "size_bytes": 2048,
+      "content_schema": "closed_loop_scene_package.v1",
+      "immutable": true
+    }
+  ]
+}
