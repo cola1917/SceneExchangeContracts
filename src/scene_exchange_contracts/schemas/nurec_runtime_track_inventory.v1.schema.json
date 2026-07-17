@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/nurec_runtime_track_inventory.v1.schema.json",
+  "title": "NuRec runtime dynamic-track inventory",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "renderer",
+    "artifact",
+    "extraction_source",
+    "tracks",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"const": "nurec_runtime_track_inventory.v1"},
+    "renderer": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "nurec"},
+        "version": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["name", "sha256", "size_bytes"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "extraction_source": {"const": "loaded_nurec_scenario.actor_mapping_plus_dynamic_pose_probe"},
+    "tracks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/track"}
+    },
+    "summary": {
+      "type": "object",
+      "required": ["runtime_track_count", "pose_verified_track_count", "unverified_track_count"],
+      "properties": {
+        "runtime_track_count": {"type": "integer", "minimum": 0},
+        "pose_verified_track_count": {"type": "integer", "minimum": 0},
+        "unverified_track_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "probe_modality": {
+      "type": "object",
+      "required": ["status", "dynamic_object_sha256"],
+      "properties": {
+        "status": {"enum": ["passed", "failed"]},
+        "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "probe": {
+      "type": "object",
+      "required": ["frame_id", "pose_delta_m", "dynamic_object_sha256", "modalities"],
+      "properties": {
+        "frame_id": {"type": "integer", "minimum": 0},
+        "pose_delta_m": {"type": "number", "minimum": 0},
+        "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "modalities": {
+          "type": "object",
+          "required": ["rgb", "lidar"],
+          "properties": {
+            "rgb": {"$ref": "#/$defs/probe_modality"},
+            "lidar": {"$ref": "#/$defs/probe_modality"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "track": {
+      "type": "object",
+      "required": [
+        "track_id",
+        "runtime_actor_id",
+        "runtime_type_id",
+        "dynamic_object_pose_verified",
+        "probe",
+        "issues"
+      ],
+      "properties": {
+        "track_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "runtime_actor_id": {"type": ["integer", "null"], "minimum": 0},
+        "runtime_type_id": {"type": ["string", "null"]},
+        "dynamic_object_pose_verified": {"type": "boolean"},
+        "probe": {
+          "anyOf": [
+            {"$ref": "#/$defs/probe"},
+            {"type": "null"}
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "nurec_runtime_track_inventory.v1",
+      "renderer": {"name": "nurec", "version": "26.04"},
+      "artifact": {
+        "name": "last.usdz",
+        "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "size_bytes": 1048576
+      },
+      "extraction_source": "loaded_nurec_scenario.actor_mapping_plus_dynamic_pose_probe",
+      "tracks": [
+        {
+          "track_id": "c1958768d48640948f6053d04cffd35b",
+          "runtime_actor_id": 101,
+          "runtime_type_id": "vehicle.car",
+          "dynamic_object_pose_verified": true,
+          "probe": {
+            "frame_id": 41,
+            "pose_delta_m": 0.5,
+            "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+            "modalities": {
+              "rgb": {"status": "passed", "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"},
+              "lidar": {"status": "passed", "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"}
+            }
+          },
+          "issues": []
+        }
+      ],
+      "summary": {
+        "runtime_track_count": 1,
+        "pose_verified_track_count": 1,
+        "unverified_track_count": 0
+      }
+    }
+  ]
+}

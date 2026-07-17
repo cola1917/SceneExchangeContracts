@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/cosmos_transfer_job.v1.schema.json",
+  "title": "Offline Cosmos Transfer presentation/augmentation job",
+  "type": "object",
+  "required": ["schema_version", "job_id", "scene_id", "source", "controls", "request", "execution", "boundary"],
+  "properties": {
+    "schema_version": {"const": "cosmos_transfer_job.v1"},
+    "job_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "source": {
+      "type": "object",
+      "required": ["accepted_run", "rgb_video"],
+      "properties": {
+        "accepted_run": {"$ref": "#/$defs/file_ref"},
+        "rgb_video": {"$ref": "#/$defs/video_ref"}
+      },
+      "additionalProperties": false
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/control"}
+    },
+    "request": {
+      "type": "object",
+      "required": ["model", "transport", "endpoint", "prompt", "resolution", "seed"],
+      "properties": {
+        "model": {"const": "cosmos-transfer2.5-2b"},
+        "transport": {"const": "http"},
+        "endpoint": {"const": "/v1/infer"},
+        "prompt": {"type": "string", "minLength": 1},
+        "negative_prompt": {"type": ["string", "null"]},
+        "resolution": {"enum": ["256", "480", "512", "720"]},
+        "seed": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": ["mode", "realtime", "consumes_usdz", "expected_latency_class"],
+      "properties": {
+        "mode": {"const": "offline_batch"},
+        "realtime": {"const": false},
+        "consumes_usdz": {"const": false},
+        "expected_latency_class": {"const": "minutes"}
+      },
+      "additionalProperties": false
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["part_of_control_loop", "part_of_sensor_acceptance", "allowed_uses", "forbidden_uses"],
+      "properties": {
+        "part_of_control_loop": {"const": false},
+        "part_of_sensor_acceptance": {"const": false},
+        "allowed_uses": {
+          "type": "array",
+          "items": {"enum": ["portfolio_presentation", "offline_data_augmentation"]},
+          "uniqueItems": true
+        },
+        "forbidden_uses": {
+          "type": "array",
+          "items": {"enum": ["closed_loop_metrics", "safety_evidence", "rgb_lidar_consistency_evidence"]},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "file_ref": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "video_ref": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes", "media_type", "frame_count", "frames_per_sec", "width", "height"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "media_type": {"const": "video/mp4"},
+        "frame_count": {"type": "integer", "minimum": 93, "maximum": 480},
+        "frames_per_sec": {"type": "number", "exclusiveMinimum": 0},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "control": {
+      "type": "object",
+      "required": ["type", "video", "control_weight"],
+      "properties": {
+        "type": {"enum": ["edge", "depth", "vis", "seg"]},
+        "video": {"$ref": "#/$defs/video_ref"},
+        "control_weight": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

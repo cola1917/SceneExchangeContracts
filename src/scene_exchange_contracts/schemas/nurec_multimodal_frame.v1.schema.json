@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/nurec_multimodal_frame.v1.schema.json",
+  "title": "Synchronized NuRec RGB and LiDAR frame request",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scene_id",
+    "frame_id",
+    "simulation_time_sec",
+    "pose_interval_sec",
+    "coordinate_frame",
+    "shared_dynamic_objects",
+    "shared_dynamic_object_sha256",
+    "modalities",
+    "synchronization"
+  ],
+  "properties": {
+    "schema_version": {"const": "nurec_multimodal_frame.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "frame_id": {"type": "integer", "minimum": 0},
+    "simulation_time_sec": {"type": "number", "minimum": 0},
+    "pose_interval_sec": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": "number", "minimum": 0},
+        "end": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "coordinate_frame": {
+      "type": "object",
+      "required": ["input", "render", "transform_source", "alignment_status"],
+      "properties": {
+        "input": {"const": "scene_local_ego_start"},
+        "render": {"const": "nuscenes_global"},
+        "transform_source": {"const": "closed_loop_scene_package.v1.alignment"},
+        "alignment_status": {"const": "runtime_validated"}
+      },
+      "additionalProperties": false
+    },
+    "shared_dynamic_objects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/dynamic_object"}
+    },
+    "shared_dynamic_object_sha256": {"$ref": "#/$defs/sha256"},
+    "modalities": {
+      "type": "object",
+      "required": ["rgb", "lidar"],
+      "properties": {
+        "rgb": {
+          "type": "object",
+          "required": ["requests"],
+          "properties": {
+            "requests": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"$ref": "#/$defs/rgb_request"}
+            }
+          },
+          "additionalProperties": false
+        },
+        "lidar": {
+          "type": "object",
+          "required": ["requests"],
+          "properties": {
+            "requests": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"$ref": "#/$defs/lidar_request"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "synchronization": {
+      "type": "object",
+      "required": ["clock", "policy", "fail_closed"],
+      "properties": {
+        "clock": {"const": "carla_snapshot"},
+        "policy": {"const": "same_frame_same_pose_interval_same_dynamic_objects"},
+        "fail_closed": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "position": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "z": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "orientation": {
+      "type": "object",
+      "required": ["x", "y", "z", "w"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "z": {"type": "number"},
+        "w": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "pose": {
+      "type": "object",
+      "required": ["position_m", "orientation_xyzw"],
+      "properties": {
+        "position_m": {"$ref": "#/$defs/position"},
+        "orientation_xyzw": {"$ref": "#/$defs/orientation"}
+      },
+      "additionalProperties": false
+    },
+    "pose_pair": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"$ref": "#/$defs/pose"},
+        "end": {"$ref": "#/$defs/pose"}
+      },
+      "additionalProperties": false
+    },
+    "dynamic_object": {
+      "type": "object",
+      "required": ["actor_id", "track_id", "actor_type", "pose_source", "pose_pair"],
+      "properties": {
+        "actor_id": {"type": "string", "minLength": 1},
+        "track_id": {"type": "string", "minLength": 1},
+        "actor_type": {"enum": ["vehicle", "pedestrian", "two_wheeler", "object"]},
+        "pose_source": {"enum": ["carla_runtime_actor_pose", "scenario_ir_reference_trajectory"]},
+        "pose_pair": {"$ref": "#/$defs/pose_pair"}
+      },
+      "additionalProperties": false
+    },
+    "sensor": {
+      "type": "object",
+      "required": ["sensor_id", "model", "parameters", "pose_pair"],
+      "properties": {
+        "sensor_id": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object"},
+        "pose_pair": {"$ref": "#/$defs/pose_pair"}
+      },
+      "additionalProperties": false
+    },
+    "rgb_request": {
+      "type": "object",
+      "required": ["request_id", "modality", "sensor", "dynamic_object_sha256"],
+      "properties": {
+        "request_id": {"type": "string", "minLength": 1},
+        "modality": {"const": "rgb"},
+        "sensor": {"$ref": "#/$defs/sensor"},
+        "dynamic_object_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "lidar_request": {
+      "type": "object",
+      "required": ["request_id", "modality", "sensor", "dynamic_object_sha256"],
+      "properties": {
+        "request_id": {"type": "string", "minLength": 1},
+        "modality": {"const": "lidar"},
+        "sensor": {"$ref": "#/$defs/sensor"},
+        "dynamic_object_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "nurec_multimodal_frame.v1",
+      "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+      "frame_id": 41,
+      "simulation_time_sec": 2.05,
+      "pose_interval_sec": {"start": 2.0, "end": 2.05},
+      "coordinate_frame": {
+        "input": "scene_local_ego_start",
+        "render": "nuscenes_global",
+        "transform_source": "closed_loop_scene_package.v1.alignment",
+        "alignment_status": "runtime_validated"
+      },
+      "shared_dynamic_objects": [
+        {
+          "actor_id": "c1958768d48640948f6053d04cffd35b",
+          "track_id": "c1958768d48640948f6053d04cffd35b",
+          "actor_type": "vehicle",
+          "pose_source": "carla_runtime_actor_pose",
+          "pose_pair": {
+            "start": {
+              "position_m": {"x": 1.0, "y": 2.0, "z": 0.0},
+              "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
+            },
+            "end": {
+              "position_m": {"x": 1.1, "y": 2.0, "z": 0.0},
+              "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
+            }
+          }
+        }
+      ],
+      "shared_dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+      "modalities": {
+        "rgb": {
+          "requests": [
+            {
+              "request_id": "cc8c0bf57f984915a77078b10eb33198:41:rgb:CAM_FRONT",
+              "modality": "rgb",
+              "sensor": {
+                "sensor_id": "CAM_FRONT",
+                "model": "pinhole",
+                "parameters": {"width": 1600, "height": 900},
+                "pose_pair": {
+                  "start": {"position_m": {"x": 0.0, "y": 0.0, "z": 1.5}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}},
+                  "end": {"position_m": {"x": 0.1, "y": 0.0, "z": 1.5}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}
+                }
+              },
+              "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"
+            }
+          ]
+        },
+        "lidar": {
+          "requests": [
+            {
+              "request_id": "cc8c0bf57f984915a77078b10eb33198:41:lidar:LIDAR_TOP",
+              "modality": "lidar",
+              "sensor": {
+                "sensor_id": "LIDAR_TOP",
+                "model": "spinning",
+                "parameters": {"channels": 32},
+                "pose_pair": {
+                  "start": {"position_m": {"x": 0.0, "y": 0.0, "z": 1.8}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}},
+                  "end": {"position_m": {"x": 0.1, "y": 0.0, "z": 1.8}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}
+                }
+              },
+              "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"
+            }
+          ]
+        }
+      },
+      "synchronization": {
+        "clock": "carla_snapshot",
+        "policy": "same_frame_same_pose_interval_same_dynamic_objects",
+        "fail_closed": true
+      }
+    }
+  ]
+}

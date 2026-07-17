@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/nurec_multimodal_evidence.v1.schema.json",
+  "title": "NuRec synchronized multimodal response evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scene_id",
+    "frame_id",
+    "simulation_time_sec",
+    "dynamic_object_sha256",
+    "dynamic_object_count",
+    "records",
+    "modalities",
+    "max_latency_ms",
+    "issues",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {"const": "nurec_multimodal_evidence.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "frame_id": {"type": "integer", "minimum": 0},
+    "simulation_time_sec": {"type": "number", "minimum": 0},
+    "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "dynamic_object_count": {"type": "integer", "minimum": 1},
+    "records": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "modalities": {
+      "type": "object",
+      "required": ["rgb", "lidar"],
+      "properties": {
+        "rgb": {"$ref": "#/$defs/modality_summary"},
+        "lidar": {"$ref": "#/$defs/modality_summary"}
+      },
+      "additionalProperties": false
+    },
+    "max_latency_ms": {"type": ["number", "null"], "minimum": 0},
+    "dispatch": {"$ref": "#/$defs/dispatch"},
+    "issues": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "status": {"enum": ["passed", "failed"]}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "dispatch": {
+      "type": "object",
+      "required": ["sdk_boundary", "dynamic_object_verification", "response_digest"],
+      "properties": {
+        "sdk_boundary": {"const": "injected_version_specific_encoder"},
+        "dynamic_object_verification": {"const": "encoder_echo_checked_before_rpc"},
+        "response_digest": {"const": "sha256_of_serialized_rpc_response"}
+      },
+      "additionalProperties": false
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "modality",
+        "sensor_id",
+        "status",
+        "latency_ms",
+        "payload_sha256",
+        "issues"
+      ],
+      "properties": {
+        "request_id": {"type": "string", "minLength": 1},
+        "modality": {"enum": ["rgb", "lidar"]},
+        "sensor_id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "failed"]},
+        "latency_ms": {"type": ["number", "null"], "minimum": 0},
+        "payload_sha256": {
+          "anyOf": [
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "modality_summary": {
+      "type": "object",
+      "required": ["requested_count", "passed_count"],
+      "properties": {
+        "requested_count": {"type": "integer", "minimum": 1},
+        "passed_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "nurec_multimodal_evidence.v1",
+      "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+      "frame_id": 41,
+      "simulation_time_sec": 2.05,
+      "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+      "dynamic_object_count": 1,
+      "records": [
+        {
+          "request_id": "cc8c0bf57f984915a77078b10eb33198:41:rgb:CAM_FRONT",
+          "modality": "rgb",
+          "sensor_id": "CAM_FRONT",
+          "status": "passed",
+          "latency_ms": 18.2,
+          "payload_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "issues": []
+        },
+        {
+          "request_id": "cc8c0bf57f984915a77078b10eb33198:41:lidar:LIDAR_TOP",
+          "modality": "lidar",
+          "sensor_id": "LIDAR_TOP",
+          "status": "passed",
+          "latency_ms": 21.4,
+          "payload_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "issues": []
+        }
+      ],
+      "modalities": {
+        "rgb": {"requested_count": 1, "passed_count": 1},
+        "lidar": {"requested_count": 1, "passed_count": 1}
+      },
+      "max_latency_ms": 50.0,
+      "issues": [],
+      "status": "passed"
+    }
+  ]
+}

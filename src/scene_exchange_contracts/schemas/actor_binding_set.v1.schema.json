@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scene-exchange-contracts.local/v1/actor_binding_set.v1.schema.json",
+  "title": "Closed-loop actor binding set",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scene_id",
+    "source",
+    "coordinate_contract",
+    "bindings",
+    "summary",
+    "readiness"
+  ],
+  "properties": {
+    "schema_version": {"const": "actor_binding_set.v1"},
+    "scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "source": {
+      "type": "object",
+      "required": ["dataset", "scene_token"],
+      "properties": {
+        "dataset": {"const": "nuscenes"},
+        "scene_token": {"type": "string", "pattern": "^[0-9a-f]{32}$"}
+      },
+      "additionalProperties": false
+    },
+    "coordinate_contract": {
+      "type": "object",
+      "required": ["scenario_ir", "carla", "nurec", "alignment_source"],
+      "properties": {
+        "scenario_ir": {"const": "scene_local_ego_start"},
+        "carla": {"const": "scene_local_ego_start"},
+        "nurec": {"const": "nuscenes_global"},
+        "alignment_source": {"const": "closed_loop_scene_package.v1.alignment"}
+      },
+      "additionalProperties": false
+    },
+    "bindings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/binding"}
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "selected_count",
+        "ready_count",
+        "interactive_count",
+        "vehicle_count",
+        "pedestrian_count"
+      ],
+      "properties": {
+        "selected_count": {"type": "integer", "minimum": 0},
+        "ready_count": {"type": "integer", "minimum": 0},
+        "interactive_count": {"type": "integer", "minimum": 0},
+        "vehicle_count": {"type": "integer", "minimum": 0},
+        "pedestrian_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "required": ["status", "blockers"],
+      "properties": {
+        "status": {"enum": ["ready", "blocked", "empty"]},
+        "blockers": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": [
+        "actor_id",
+        "actor_type",
+        "category",
+        "role",
+        "source_track_id",
+        "control",
+        "carla",
+        "nurec",
+        "sensor_sync",
+        "status",
+        "issues"
+      ],
+      "properties": {
+        "actor_id": {"type": "string", "minLength": 1},
+        "actor_type": {"enum": ["vehicle", "pedestrian", "two_wheeler", "object"]},
+        "category": {"type": "string"},
+        "role": {"type": "string", "minLength": 1},
+        "source_track_id": {"type": "string", "minLength": 1},
+        "control": {
+          "type": "object",
+          "required": ["mode", "ego_responsive", "capabilities", "corridor_constraint"],
+          "properties": {
+            "mode": {"enum": ["replay", "scripted", "traffic_manager"]},
+            "ego_responsive": {"type": "boolean"},
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "trajectory_replay",
+                  "speed",
+                  "throttle",
+                  "brake",
+                  "steer",
+                  "pause",
+                  "yield",
+                  "abort"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "corridor_constraint": {"enum": ["none", "source_reference"]}
+          },
+          "additionalProperties": false
+        },
+        "carla": {
+          "type": "object",
+          "required": ["role_name", "blueprint", "runtime_actor_id"],
+          "properties": {
+            "role_name": {"type": "string", "minLength": 1},
+            "blueprint": {"type": "string", "minLength": 1},
+            "runtime_actor_id": {"type": ["integer", "null"], "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "nurec": {
+          "type": "object",
+          "required": ["track_id", "inventory_verified", "dynamic_object_pose_supported"],
+          "properties": {
+            "track_id": {"type": "string", "minLength": 1},
+            "inventory_verified": {"type": "boolean"},
+            "dynamic_object_pose_supported": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "sensor_sync": {
+          "type": "object",
+          "required": ["required_modalities", "pose_source", "same_dynamic_object_for_all_modalities"],
+          "properties": {
+            "required_modalities": {
+              "type": "array",
+              "items": {"enum": ["rgb", "lidar"]},
+              "uniqueItems": true
+            },
+            "pose_source": {
+              "enum": ["scenario_ir_reference_trajectory", "carla_runtime_actor_pose"]
+            },
+            "same_dynamic_object_for_all_modalities": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "status": {"enum": ["ready", "pending_nurec_track", "unsupported"]},
+        "issues": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "actor_binding_set.v1",
+      "scene_id": "cc8c0bf57f984915a77078b10eb33198",
+      "source": {
+        "dataset": "nuscenes",
+        "scene_token": "cc8c0bf57f984915a77078b10eb33198"
+      },
+      "coordinate_contract": {
+        "scenario_ir": "scene_local_ego_start",
+        "carla": "scene_local_ego_start",
+        "nurec": "nuscenes_global",
+        "alignment_source": "closed_loop_scene_package.v1.alignment"
+      },
+      "bindings": [
+        {
+          "actor_id": "c1958768d48640948f6053d04cffd35b",
+          "actor_type": "vehicle",
+          "category": "vehicle.car",
+          "role": "trigger",
+          "source_track_id": "c1958768d48640948f6053d04cffd35b",
+          "control": {
+            "mode": "scripted",
+            "ego_responsive": true,
+            "capabilities": ["speed", "throttle", "brake", "steer", "yield", "abort"],
+            "corridor_constraint": "none"
+          },
+          "carla": {
+            "role_name": "actor.c1958768d486",
+            "blueprint": "vehicle.*",
+            "runtime_actor_id": null
+          },
+          "nurec": {
+            "track_id": "c1958768d48640948f6053d04cffd35b",
+            "inventory_verified": true,
+            "dynamic_object_pose_supported": true
+          },
+          "sensor_sync": {
+            "required_modalities": ["rgb", "lidar"],
+            "pose_source": "carla_runtime_actor_pose",
+            "same_dynamic_object_for_all_modalities": true
+          },
+          "status": "ready",
+          "issues": []
+        }
+      ],
+      "summary": {
+        "selected_count": 1,
+        "ready_count": 1,
+        "interactive_count": 1,
+        "vehicle_count": 1,
+        "pedestrian_count": 0
+      },
+      "readiness": {"status": "ready", "blockers": []}
+    }
+  ]
+}
