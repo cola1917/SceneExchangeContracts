@@ -132,12 +132,13 @@
     },
     "dynamic_object": {
       "type": "object",
-      "required": ["actor_id", "track_id", "actor_type", "pose_source", "pose_pair"],
+      "required": ["actor_id", "track_id", "actor_type", "pose_source", "pose_reference", "pose_pair"],
       "properties": {
         "actor_id": {"type": "string", "minLength": 1},
         "track_id": {"type": "string", "minLength": 1},
         "actor_type": {"enum": ["vehicle", "pedestrian", "two_wheeler", "object"]},
         "pose_source": {"enum": ["carla_runtime_actor_pose", "scenario_ir_reference_trajectory"]},
+        "pose_reference": {"enum": ["source_track_frame", "carla_bounding_box_center", "carla_actor_origin"]},
         "pose_pair": {"$ref": "#/$defs/pose_pair"}
       },
       "additionalProperties": false
@@ -195,6 +196,7 @@
           "track_id": "c1958768d48640948f6053d04cffd35b",
           "actor_type": "vehicle",
           "pose_source": "carla_runtime_actor_pose",
+          "pose_reference": "carla_bounding_box_center",
           "pose_pair": {
             "start": {
               "position_m": {"x": 1.0, "y": 2.0, "z": 0.0},
@@ -207,7 +209,7 @@
           }
         }
       ],
-      "shared_dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+      "shared_dynamic_object_sha256": "69d7e99c0e8d0f4ab7522ae7f586028f372e75b81060c80932d62f997eb9c986",
       "modalities": {
         "rgb": {
           "requests": [
@@ -223,7 +225,7 @@
                   "end": {"position_m": {"x": 0.1, "y": 0.0, "z": 1.5}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}
                 }
               },
-              "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"
+              "dynamic_object_sha256": "69d7e99c0e8d0f4ab7522ae7f586028f372e75b81060c80932d62f997eb9c986"
             }
           ]
         },
@@ -241,7 +243,7 @@
                   "end": {"position_m": {"x": 0.1, "y": 0.0, "z": 1.8}, "orientation_xyzw": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}
                 }
               },
-              "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"
+              "dynamic_object_sha256": "69d7e99c0e8d0f4ab7522ae7f586028f372e75b81060c80932d62f997eb9c986"
             }
           ]
         }

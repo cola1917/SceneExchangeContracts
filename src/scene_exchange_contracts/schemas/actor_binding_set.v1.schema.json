@@ -142,7 +142,7 @@
         },
         "sensor_sync": {
           "type": "object",
-          "required": ["required_modalities", "pose_source", "same_dynamic_object_for_all_modalities"],
+          "required": ["required_modalities", "pose_source", "pose_reference", "same_dynamic_object_for_all_modalities"],
           "properties": {
             "required_modalities": {
               "type": "array",
@@ -151,6 +151,9 @@
             },
             "pose_source": {
               "enum": ["scenario_ir_reference_trajectory", "carla_runtime_actor_pose"]
+            },
+            "pose_reference": {
+              "enum": ["source_track_frame", "carla_bounding_box_center", "carla_actor_origin"]
             },
             "same_dynamic_object_for_all_modalities": {"const": true}
           },
@@ -206,6 +209,7 @@
           "sensor_sync": {
             "required_modalities": ["rgb", "lidar"],
             "pose_source": "carla_runtime_actor_pose",
+            "pose_reference": "carla_bounding_box_center",
             "same_dynamic_object_for_all_modalities": true
           },
           "status": "ready",
