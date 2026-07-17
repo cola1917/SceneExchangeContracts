@@ -527,6 +527,15 @@ def _validate_nurec_runtime_track_inventory_semantics(document: dict[str, Any]) 
                         f"Verified NuRec track {item['track_id']} has invalid {modality} evidence"
                     )
                 if (
+                    not evidence["baseline_repeatable"]
+                    or evidence["baseline_repeat_payload_sha256"] is None
+                    or evidence["baseline_payload_sha256"]
+                    != evidence["baseline_repeat_payload_sha256"]
+                ):
+                    raise SharedProtocolValidationError(
+                        f"Verified NuRec track {item['track_id']} has unstable {modality} baseline"
+                    )
+                if (
                     not evidence["content_changed"]
                     or evidence["baseline_payload_sha256"] is None
                     or evidence["moved_payload_sha256"] is None

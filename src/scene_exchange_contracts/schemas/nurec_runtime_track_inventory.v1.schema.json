@@ -56,7 +56,9 @@
         "status",
         "dynamic_object_sha256",
         "baseline_payload_sha256",
+        "baseline_repeat_payload_sha256",
         "moved_payload_sha256",
+        "baseline_repeatable",
         "content_changed"
       ],
       "properties": {
@@ -66,10 +68,15 @@
           "type": ["string", "null"],
           "pattern": "^[0-9a-f]{64}$"
         },
+        "baseline_repeat_payload_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "moved_payload_sha256": {
           "type": ["string", "null"],
           "pattern": "^[0-9a-f]{64}$"
         },
+        "baseline_repeatable": {"type": "boolean"},
         "content_changed": {"type": "boolean"}
       },
       "additionalProperties": false
@@ -159,14 +166,18 @@
                 "status": "passed",
                 "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
                 "baseline_payload_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+                "baseline_repeat_payload_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
                 "moved_payload_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+                "baseline_repeatable": true,
                 "content_changed": true
               },
               "lidar": {
                 "status": "passed",
                 "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
                 "baseline_payload_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+                "baseline_repeat_payload_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
                 "moved_payload_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+                "baseline_repeatable": true,
                 "content_changed": true
               }
             }

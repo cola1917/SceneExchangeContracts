@@ -103,6 +103,19 @@ class ConformanceTests(unittest.TestCase):
         with self.assertRaisesRegex(SharedProtocolValidationError, "no rgb render delta"):
             validate_document(inventory)
 
+    def test_rejects_pose_verified_track_with_unrepeatable_baseline(self):
+        from scene_exchange_contracts.validation import (
+            SharedProtocolValidationError,
+            validate_document,
+        )
+
+        inventory = self._example("nurec_runtime_track_inventory.v1")
+        lidar = inventory["tracks"][0]["probe"]["modalities"]["lidar"]
+        lidar["baseline_repeat_payload_sha256"] = "8" * 64
+        lidar["baseline_repeatable"] = False
+        with self.assertRaisesRegex(SharedProtocolValidationError, "unstable lidar baseline"):
+            validate_document(inventory)
+
 
 if __name__ == "__main__":
     unittest.main()
