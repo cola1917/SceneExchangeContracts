@@ -90,6 +90,19 @@ class ConformanceTests(unittest.TestCase):
         with self.assertRaisesRegex(SharedProtocolValidationError, "explain"):
             validate_document(inventory)
 
+    def test_rejects_pose_verified_track_without_rgb_and_lidar_render_delta(self):
+        from scene_exchange_contracts.validation import (
+            SharedProtocolValidationError,
+            validate_document,
+        )
+
+        inventory = self._example("nurec_runtime_track_inventory.v1")
+        rgb = inventory["tracks"][0]["probe"]["modalities"]["rgb"]
+        rgb["moved_payload_sha256"] = rgb["baseline_payload_sha256"]
+        rgb["content_changed"] = False
+        with self.assertRaisesRegex(SharedProtocolValidationError, "no rgb render delta"):
+            validate_document(inventory)
+
 
 if __name__ == "__main__":
     unittest.main()

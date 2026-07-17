@@ -52,19 +52,44 @@
   "$defs": {
     "probe_modality": {
       "type": "object",
-      "required": ["status", "dynamic_object_sha256"],
+      "required": [
+        "status",
+        "dynamic_object_sha256",
+        "baseline_payload_sha256",
+        "moved_payload_sha256",
+        "content_changed"
+      ],
       "properties": {
         "status": {"enum": ["passed", "failed"]},
-        "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "baseline_payload_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "moved_payload_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "content_changed": {"type": "boolean"}
       },
       "additionalProperties": false
     },
     "probe": {
       "type": "object",
-      "required": ["frame_id", "pose_delta_m", "dynamic_object_sha256", "modalities"],
+      "required": [
+        "frame_id",
+        "pose_delta_m",
+        "baseline_dynamic_object_sha256",
+        "dynamic_object_sha256",
+        "modalities"
+      ],
       "properties": {
         "frame_id": {"type": "integer", "minimum": 0},
         "pose_delta_m": {"type": "number", "minimum": 0},
+        "baseline_dynamic_object_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "dynamic_object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "modalities": {
           "type": "object",
@@ -127,10 +152,23 @@
           "probe": {
             "frame_id": 41,
             "pose_delta_m": 0.5,
+            "baseline_dynamic_object_sha256": "d370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
             "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
             "modalities": {
-              "rgb": {"status": "passed", "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"},
-              "lidar": {"status": "passed", "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5"}
+              "rgb": {
+                "status": "passed",
+                "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+                "baseline_payload_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+                "moved_payload_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+                "content_changed": true
+              },
+              "lidar": {
+                "status": "passed",
+                "dynamic_object_sha256": "e370c5ee1d500eda8108cdf22db3037a29fd915192a31ada9759f339735d23f5",
+                "baseline_payload_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+                "moved_payload_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+                "content_changed": true
+              }
             }
           },
           "issues": []

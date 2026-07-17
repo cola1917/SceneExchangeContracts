@@ -511,6 +511,11 @@ def _validate_nurec_runtime_track_inventory_semantics(document: dict[str, Any]) 
                     f"Verified NuRec track {item['track_id']} has incomplete probe evidence"
                 )
             digest = probe["dynamic_object_sha256"]
+            baseline_digest = probe["baseline_dynamic_object_sha256"]
+            if baseline_digest == digest:
+                raise SharedProtocolValidationError(
+                    f"Verified NuRec track {item['track_id']} did not change its request payload"
+                )
             if probe["pose_delta_m"] < 0.05:
                 raise SharedProtocolValidationError(
                     f"Verified NuRec track {item['track_id']} did not move during its probe"
@@ -520,6 +525,16 @@ def _validate_nurec_runtime_track_inventory_semantics(document: dict[str, Any]) 
                 if evidence["status"] != "passed" or evidence["dynamic_object_sha256"] != digest:
                     raise SharedProtocolValidationError(
                         f"Verified NuRec track {item['track_id']} has invalid {modality} evidence"
+                    )
+                if (
+                    not evidence["content_changed"]
+                    or evidence["baseline_payload_sha256"] is None
+                    or evidence["moved_payload_sha256"] is None
+                    or evidence["baseline_payload_sha256"]
+                    == evidence["moved_payload_sha256"]
+                ):
+                    raise SharedProtocolValidationError(
+                        f"Verified NuRec track {item['track_id']} has no {modality} render delta"
                     )
         elif not item["issues"]:
             raise SharedProtocolValidationError(
