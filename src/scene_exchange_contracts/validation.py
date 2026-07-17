@@ -465,6 +465,19 @@ def _validate_nurec_multimodal_evidence_semantics(document: dict[str, Any]) -> N
             raise SharedProtocolValidationError(
                 f"NuRec response {record['request_id']} status is inconsistent"
             )
+        metadata = record.get("response_metadata")
+        if metadata is not None:
+            if record["modality"] == "rgb" and metadata.get("encoding") != "jpeg":
+                raise SharedProtocolValidationError(
+                    f"NuRec RGB response {record['request_id']} has mismatched metadata"
+                )
+            if (
+                record["modality"] == "lidar"
+                and metadata.get("encoding") != "float_xyz_intensity"
+            ):
+                raise SharedProtocolValidationError(
+                    f"NuRec LiDAR response {record['request_id']} has mismatched metadata"
+                )
 
     for modality in ("rgb", "lidar"):
         selected = [item for item in records if item["modality"] == modality]

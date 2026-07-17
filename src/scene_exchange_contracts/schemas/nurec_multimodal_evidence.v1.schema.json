@@ -54,7 +54,13 @@
       "properties": {
         "sdk_boundary": {"const": "injected_version_specific_encoder"},
         "dynamic_object_verification": {"const": "encoder_echo_checked_before_rpc"},
-        "response_digest": {"const": "sha256_of_serialized_rpc_response"}
+        "response_digest": {"const": "sha256_of_serialized_rpc_response"},
+        "response_validation": {
+          "enum": ["serialized_bytes_only", "injected_modality_specific_inspector"]
+        },
+        "runtime_scene_id": {"type": "string", "minLength": 1},
+        "canonical_scene_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "nre_api": {"type": "string", "minLength": 1}
       },
       "additionalProperties": false
     },
@@ -81,11 +87,36 @@
             {"type": "null"}
           ]
         },
+        "response_metadata": {
+          "oneOf": [
+            {"$ref": "#/$defs/rgb_response_metadata"},
+            {"$ref": "#/$defs/lidar_response_metadata"}
+          ]
+        },
         "issues": {
           "type": "array",
           "items": {"type": "string", "minLength": 1},
           "uniqueItems": true
         }
+      },
+      "additionalProperties": false
+    },
+    "rgb_response_metadata": {
+      "type": "object",
+      "required": ["width", "height", "encoding"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "encoding": {"const": "jpeg"}
+      },
+      "additionalProperties": false
+    },
+    "lidar_response_metadata": {
+      "type": "object",
+      "required": ["point_count", "encoding"],
+      "properties": {
+        "point_count": {"type": "integer", "minimum": 1},
+        "encoding": {"const": "float_xyz_intensity"}
       },
       "additionalProperties": false
     },

@@ -44,6 +44,39 @@ class ConformanceTests(unittest.TestCase):
         with self.assertRaisesRegex(SharedProtocolValidationError, "passed_count"):
             validate_document(evidence)
 
+    def test_accepts_typed_runtime_response_metadata_and_rejects_cross_modality(self):
+        from scene_exchange_contracts.validation import (
+            SharedProtocolValidationError,
+            validate_document,
+        )
+
+        evidence = self._example("nurec_multimodal_evidence.v1")
+        evidence["dispatch"] = {
+            "sdk_boundary": "injected_version_specific_encoder",
+            "dynamic_object_verification": "encoder_echo_checked_before_rpc",
+            "response_digest": "sha256_of_serialized_rpc_response",
+            "response_validation": "injected_modality_specific_inspector",
+            "runtime_scene_id": "scene-0061",
+            "canonical_scene_id": evidence["scene_id"],
+            "nre_api": "SensorsimService/26.04",
+        }
+        evidence["records"][0]["response_metadata"] = {
+            "width": 1600,
+            "height": 900,
+            "encoding": "jpeg",
+        }
+        evidence["records"][1]["response_metadata"] = {
+            "point_count": 100,
+            "encoding": "float_xyz_intensity",
+        }
+        validate_document(evidence)
+
+        evidence["records"][0]["response_metadata"] = evidence["records"][1][
+            "response_metadata"
+        ]
+        with self.assertRaisesRegex(SharedProtocolValidationError, "mismatched metadata"):
+            validate_document(evidence)
+
     def test_rejects_unexplained_unverified_runtime_track(self):
         from scene_exchange_contracts.validation import (
             SharedProtocolValidationError,
